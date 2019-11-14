@@ -1,0 +1,41 @@
+{
+    "listeners": {
+      "*:8080": {
+          "pass": "routes"
+      }
+    },   
+    "routes": [
+        {
+            "match": {
+                "uri": [
+                    "*.css",
+                    "*.ico",
+                    "*.jpg",
+                    "*.js",
+                    "*.png",
+                    "*.xml",
+                    "*.html"
+                ]
+            },
+            "action": {
+                "share": "/data/files/"
+            }
+        },
+        {
+            "action": {
+                "pass": "applications/python"
+            }
+        }
+
+    ]
+    ,
+     "applications": {
+            "python": {
+                "type": "python 3.7",
+                "processes": 3,
+                "working_directory": "/data/python",
+                "path": "dreamnote",
+                "module": "application.wsgi"
+            }
+        }
+}
