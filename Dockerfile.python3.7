@@ -1,0 +1,25 @@
+FROM python:3.7-alpine
+
+ENV UNIT_VERSION 1.12.0
+
+RUN apk update \
+    && apk add --no-cache --virtual .build-deps make gcc libc-dev \
+    && cd /tmp && wget -qO - "http://unit.nginx.org/download/unit-$UNIT_VERSION.tar.gz" | tar xvz \
+    && cd unit-$UNIT_VERSION \
+    && ./configure --prefix=/usr \
+                 --modules=lib --control='unix:/var/run/control.unit.sock' \
+                 --log=/dev/stdout \
+                 --pid=/var/run/unitd.pid \
+    && ./configure python --config=/usr/local/bin/python-config \
+    && make install \
+    && rm -rf /tmp/unit-$UNIT_VERSION \
+    && apk del .build-deps
+
+RUN apk add --no-cache --upgrade bash curl
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod 777 /usr/local/bin/docker-entrypoint.sh
+
+STOPSIGNAL SIGTERM
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["unitd", "--no-daemon", "--control", "unix:/var/run/control.unit.sock"]
